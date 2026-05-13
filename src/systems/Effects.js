@@ -12,6 +12,9 @@ export class Effects {
     this.weaponGroup = this.createWeaponModel();
     this.camera.add(this.weaponGroup);
     this.weaponGroup.add(this.muzzleLight);
+    this.hipPosition = new THREE.Vector3(0.34, -0.32, -0.72);
+    this.adsPosition = new THREE.Vector3(0.0, -0.22, -0.48);
+    this.isAds = false;
   }
 
   createWeaponModel() {
@@ -64,8 +67,22 @@ export class Effects {
       this.weaponAccentMaterial.color.set(weapon.color);
       this.weaponAccentMaterial.emissive.set(weapon.color);
     }
-    const scale = weapon.role.includes("sniper") || weapon.role.includes("machine") ? 1.12 : weapon.role.includes("shotgun") ? 1.06 : weapon.role.includes("sidearm") ? 0.82 : 1;
+    const role = weapon.role;
+    let scale = 1;
+    if (role.includes("machine pistol") || role.includes("sidearm")) {
+      scale = 0.82;
+    } else if (role.includes("sniper") || role.includes("machine") || role.includes("anti-material")) {
+      scale = 1.12;
+    } else if (role.includes("shotgun")) {
+      scale = 1.06;
+    } else if (role.includes("suppressed")) {
+      scale = 1.04;
+    }
     this.weaponGroup.scale.set(scale, scale, scale);
+  }
+
+  setAds(aiming) {
+    this.isAds = aiming;
   }
 
   muzzleFlash(weapon) {
@@ -104,7 +121,8 @@ export class Effects {
 
   update(delta) {
     this.muzzleLight.intensity = Math.max(0, this.muzzleLight.intensity - delta * 18);
-    this.weaponGroup.position.lerp(new THREE.Vector3(0.34, -0.32, -0.72), Math.min(1, delta * 16));
+    const targetPos = this.isAds ? this.adsPosition : this.hipPosition;
+    this.weaponGroup.position.lerp(targetPos, Math.min(1, delta * 14));
 
     for (let i = this.activeImpacts.length - 1; i >= 0; i -= 1) {
       const impact = this.activeImpacts[i];

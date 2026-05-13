@@ -72,12 +72,21 @@ export class AudioSystem {
   }
 
   shoot(weapon) {
-    if (weapon.role.includes("sniper") || weapon.role.includes("marksman")) {
+    if (weapon.role.includes("anti-material")) {
+      this.tone({ frequency: 68, duration: 0.22, type: "sawtooth", gain: 0.35, slideTo: 32 });
+      this.noise({ duration: 0.18, gain: 0.22, filter: 420 });
+    } else if (weapon.role.includes("sniper") || weapon.role.includes("marksman")) {
       this.tone({ frequency: 95, duration: 0.15, type: "sawtooth", gain: 0.28, slideTo: 45 });
       this.noise({ duration: 0.11, gain: 0.16, filter: 620 });
+    } else if (weapon.role.includes("suppressed")) {
+      this.tone({ frequency: 160, duration: 0.07, type: "sine", gain: 0.12, slideTo: 110 });
+      this.noise({ duration: 0.04, gain: 0.06, filter: 1800 });
     } else if (weapon.role.includes("shotgun")) {
       this.tone({ frequency: 72, duration: 0.14, type: "square", gain: 0.3, slideTo: 38 });
       this.noise({ duration: 0.16, gain: 0.2, filter: 480 });
+    } else if (weapon.role.includes("machine pistol")) {
+      this.tone({ frequency: 195, duration: 0.04, type: "square", gain: 0.16, slideTo: 145 });
+      this.noise({ duration: 0.03, gain: 0.07, filter: 1600 });
     } else if (weapon.role.includes("machine")) {
       this.tone({ frequency: 102, duration: 0.075, type: "square", gain: 0.23, slideTo: 70 });
       this.noise({ duration: 0.075, gain: 0.14, filter: 820 });

@@ -171,7 +171,7 @@ export class HUD {
     indicator.classList.add("active");
   }
 
-  update(delta, weapon, input, reloading) {
+  update(delta, weapon, input, reloading, effectiveSpread = 0, aiming = false) {
     const player = this.state.player;
     const match = this.state.match;
     const modeLabel = GAME_CONFIG.modes.find((mode) => mode.id === this.state.mode)?.label || this.state.mode;
@@ -202,6 +202,7 @@ export class HUD {
     this.refs.fps.textContent = this.state.admin.fpsVisible ? `${Math.round(this.state.stats.fps)} FPS` : "";
     this.updateProgress();
 
+    this.updateCrosshair(effectiveSpread, aiming);
     this.updateKillFeed();
     this.updateScoreboard(input);
     this.updateOverlay();
@@ -263,6 +264,38 @@ export class HUD {
       respawn.classList.remove("visible");
       respawn.textContent = "";
     }
+  }
+
+  updateCrosshair(effectiveSpread, aiming) {
+    const crosshair = this.container.querySelector(".crosshair");
+    const spreadPx = Math.round(18 + effectiveSpread * 1800);
+    crosshair.style.width = `${spreadPx * 2}px`;
+    crosshair.style.height = `${spreadPx * 2}px`;
+    const lines = crosshair.querySelectorAll(".crosshair-line");
+    const dot = crosshair.querySelector(".crosshair-dot");
+    const lineLen = Math.max(6, Math.round(10 - effectiveSpread * 120));
+    lines.forEach((line) => {
+      if (line.classList.contains("top") || line.classList.contains("bottom")) {
+        line.style.height = `${lineLen}px`;
+        line.style.left = `${spreadPx - 1}px`;
+      } else {
+        line.style.width = `${lineLen}px`;
+        line.style.top = `${spreadPx - 1}px`;
+      }
+    });
+    const topLine = crosshair.querySelector(".crosshair-line.top");
+    const bottomLine = crosshair.querySelector(".crosshair-line.bottom");
+    const leftLine = crosshair.querySelector(".crosshair-line.left");
+    const rightLine = crosshair.querySelector(".crosshair-line.right");
+    if (topLine) topLine.style.top = "0";
+    if (bottomLine) bottomLine.style.bottom = "0";
+    if (leftLine) leftLine.style.left = "0";
+    if (rightLine) rightLine.style.right = "0";
+    if (dot) {
+      dot.style.top = `${spreadPx - 1}px`;
+      dot.style.left = `${spreadPx - 1}px`;
+    }
+    crosshair.classList.toggle("ads", aiming);
   }
 
   updateTransient(delta) {

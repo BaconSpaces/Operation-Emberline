@@ -18,13 +18,14 @@ Open the local URL printed by Vite, usually `http://localhost:5173`.
 - Mouse: look
 - Move mouse over the game: fallback aim if pointer lock is blocked
 - Left mouse: fire
+- Right mouse: aim down sights (ADS)
 - F: backup fire key
 - WASD: move
 - Shift: sprint
 - Space: jump
 - C or Ctrl: crouch
 - R: reload
-- 1-8: switch weapons outside Gun Game
+- 1-0: switch weapons outside Gun Game
 - Tab: scoreboard
 - Escape: release pointer lock / pause
 - `~`: admin menu
@@ -36,11 +37,24 @@ Open the local URL printed by Vite, usually `http://localhost:5173`.
 - Hushbreaker SG: close-range shotgun
 - Kestrel B3: fast burst rifle
 - Bulwark LMG: heavy suppressive weapon
-- Longwatch M32: precision rifle
+- Longwatch M32: precision sniper rifle
 - Arcbolt DMR: marksman rifle
-- Sidewinder X2: final sidearm
+- Sidewinder X2: tactical sidearm
+- Viper MP7: rapid-fire machine pistol
+- Thunderclap .50: anti-material rifle with extreme damage
+- Stormfront AR: low-recoil tactical rifle
+- Razorback PDW: lightweight high-mobility SMG
+- Ironjaw SG: fully automatic shotgun
+- Nightfall SR: suppressed marksman rifle
 
-Each weapon has configurable damage, fire delay, reload time, magazine size, reserve ammo, recoil, spread, range, raycast hit detection, muzzle flash, impact effects, and tracer effects.
+Each weapon has configurable damage, fire delay, reload time, magazine size, reserve ammo, recoil, spread, range, ADS zoom, ADS spread multiplier, raycast hit detection, muzzle flash, impact effects, and tracer effects.
+
+## Aim System
+
+- Right-click to aim down sights (ADS) for tighter spread, reduced recoil, and magnified view
+- Dynamic spread increases while firing and recovers when idle
+- Moving increases spread; crouching reduces it
+- Each weapon has unique ADS characteristics (zoom level, spread reduction, movement penalty)
 
 ## Game Modes
 
@@ -99,5 +113,5 @@ src/
 - Multiplayer: add an authoritative server, server-side reconciliation, snapshot interpolation, anti-cheat checks, and server-owned admin commands.
 - Maps: replace placeholder geometry with optimized GLTF assets and baked lightmaps.
 - Bots: add navmesh pathfinding, squad tactics, grenades, suppression, and better cover scoring.
-- Weapons: add animation clips, attachments, projectile variants, recoil patterns, and aim-down-sights.
+- Weapons: add animation clips, attachments, projectile variants, and advanced recoil patterns.
 - Performance: batch static geometry, use instancing for repeated props, and add asset streaming for larger environments.
