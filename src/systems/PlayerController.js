@@ -136,6 +136,7 @@ export class PlayerController {
     this.lookEuler.y -= movementX * this.lookSensitivity;
     this.lookEuler.x -= movementY * this.lookSensitivity;
     this.lookEuler.x = clamp(this.lookEuler.x, -Math.PI / 2 + 0.02, Math.PI / 2 - 0.02);
+    this.lookEuler.z = 0;
     this.camera.quaternion.setFromEuler(this.lookEuler);
   }
 
@@ -368,7 +369,10 @@ export class PlayerController {
   }
 
   addCameraKick(amount) {
-    this.camera.rotation.x = clamp(this.camera.rotation.x - amount, -Math.PI / 2 + 0.02, Math.PI / 2 - 0.02);
+    this.lookEuler.setFromQuaternion(this.camera.quaternion);
+    this.lookEuler.x = clamp(this.lookEuler.x - amount, -Math.PI / 2 + 0.02, Math.PI / 2 - 0.02);
+    this.lookEuler.z = 0;
+    this.camera.quaternion.setFromEuler(this.lookEuler);
   }
 
   updateAds(delta) {
