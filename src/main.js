@@ -142,9 +142,13 @@ state.events.on("pointer-lock", ({ locked }) => {
   }
 });
 
-state.events.on("player-died", () => {
+state.events.on("player-died", ({ cause }) => {
   if (state.status === "running") {
     state.match.teamScores[GAME_CONFIG.teams.enemy.id] += 1;
+
+    if (state.mode === "gunGame" && (cause === "melee" || cause === "suicide")) {
+      weapons.demoteGunGame();
+    }
   }
 });
 
