@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { randRange } from "../core/math.js";
+import { clamp, randRange } from "../core/math.js";
 import { resetWeaponAmmo } from "../core/state.js";
 
 export class WeaponSystem {
@@ -17,6 +17,9 @@ export class WeaponSystem {
     this.reloading = false;
     this.raycaster = new THREE.Raycaster();
     this.botManager = null;
+    this.dynamicSpread = 0;
+    this.spreadRecoveryRate = 0.06;
+    this.spreadBuildupRate = 0.4;
     this.effects.setWeapon(this.currentWeapon);
   }
 
@@ -28,8 +31,24 @@ export class WeaponSystem {
     return this.state.weapons[this.activeIndex];
   }
 
+  getEffectiveSpread() {
+    const weapon = this.currentWeapon;
+    const baseSpread = weapon.spread;
+    const aiming = this.state.player.aiming;
+    const moving = this.state.player.moving;
+    const crouching = this.state.player.crouching;
+
+    let spread = baseSpread + this.dynamicSpread;
+    if (aiming) spread *= weapon.adsSpreadMult ?? 0.4;
+    if (moving) spread *= 1.3;
+    if (crouching) spread *= 0.7;
+    return spread;
+  }
+
   update(delta) {
     this.fireCooldown = Math.max(0, this.fireCooldown - delta);
+
+    this.dynamicSpread = Math.max(0, this.dynamicSpread - this.spreadRecoveryRate * delta);
 
     if (this.reloading) {
       this.reloadTimer -= delta;
@@ -41,7 +60,7 @@ export class WeaponSystem {
     if (this.state.mode !== "gunGame") {
       for (let i = 0; i < this.state.weapons.length; i += 1) {
         const weapon = this.state.weapons[i];
-        if (this.input.wasPressed(weapon.slot) && weapon.unlocked) {
+        if (weapon.slot && this.input.wasPressed(weapon.slot) && weapon.unlocked) {
           this.switchTo(i);
         }
       }
@@ -50,6 +69,8 @@ export class WeaponSystem {
     if (this.input.wasPressed("r")) {
       this.reload();
     }
+
+    this.state.player.aiming = this.input.isMouseDown(2);
 
     if (!this.state.player.alive || this.state.status !== "running" || this.state.admin.open) return;
 
@@ -72,6 +93,7 @@ export class WeaponSystem {
     this.activeIndex = index;
     this.reloading = false;
     this.fireCooldown = 0.12;
+    this.dynamicSpread = 0;
     this.effects.setWeapon(this.currentWeapon);
     this.state.events.emit("weapon-changed", { weapon: this.currentWeapon });
   }
@@ -80,6 +102,7 @@ export class WeaponSystem {
     this.reloading = false;
     this.reloadTimer = 0;
     this.fireCooldown = 0;
+    this.dynamicSpread = 0;
 
     if (mode === "gunGame") {
       this.state.gunGame.weaponIndex = 0;
@@ -142,11 +165,21 @@ export class WeaponSystem {
     this.fireCooldown = weapon.fireRate / 1000;
     this.audio.shoot(weapon);
     this.effects.muzzleFlash(weapon);
-    this.player.addCameraKick(weapon.recoil);
+
+    const recoilMult = this.state.player.aiming ? 0.6 : 1;
+    this.player.addCameraKick(weapon.recoil * recoilMult);
+
+    this.dynamicSpread = clamp(
+      this.dynamicSpread + weapon.spread * this.spreadBuildupRate,
+      0,
+      weapon.spread * 2.5
+    );
+
+    const effectiveSpread = this.getEffectiveSpread();
 
     let didHitBot = false;
     for (let i = 0; i < weapon.pellets; i += 1) {
-      const ray = this.createShotRay(weapon.spread);
+      const ray = this.createShotRay(effectiveSpread);
       const hit = this.resolveRaycast(ray, weapon);
       if (hit?.botHit) {
         didHitBot = true;

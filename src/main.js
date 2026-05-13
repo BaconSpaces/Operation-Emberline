@@ -42,6 +42,10 @@ const weapons = new WeaponSystem(camera, state, input, world, effects, audio, pl
 const bots = new BotManager(scene, world, state, audio, effects);
 bots.setPlayer(player);
 weapons.setBotManager(bots);
+player.setCurrentWeapon(weapons.currentWeapon);
+state.events.on("weapon-changed", ({ weapon }) => {
+  player.setCurrentWeapon(weapon);
+});
 
 const match = {
   restart() {
@@ -193,13 +197,14 @@ function animate() {
     weapons.update(delta);
     bots.update(delta);
   }
+  effects.setAds(state.player.aiming);
   effects.update(delta);
 
   fpsAverage = fpsAverage * 0.92 + (1 / Math.max(0.0001, delta)) * 0.08;
   state.stats.fps = fpsAverage;
   state.stats.frameTime = delta * 1000;
 
-  hud.update(delta, weapons.currentWeapon, input, weapons.reloading);
+  hud.update(delta, weapons.currentWeapon, input, weapons.reloading, weapons.getEffectiveSpread(), state.player.aiming);
   world.setDebugColliders(state.admin.debugColliders);
   renderer.render(scene, camera);
   input.endFrame();

@@ -40,7 +40,10 @@ export function createInitialState() {
       godMode: false,
       noClip: false,
       speedMultiplier: 1,
-      spawnShield: 0
+      spawnShield: 0,
+      aiming: false,
+      moving: false,
+      crouching: false
     },
     gunGame: {
       weaponIndex: 0,

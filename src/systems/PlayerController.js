@@ -21,6 +21,9 @@ export class PlayerController {
     this.fallbackMouseHasMoved = false;
     this.lookSensitivity = 0.0022;
     this.lookEuler = new THREE.Euler(0, 0, 0, "YXZ");
+    this.baseFov = camera.fov;
+    this.targetFov = camera.fov;
+    this.currentFov = camera.fov;
     this.lastSafePosition = world.getRandomSpawn("player");
     this.camera.position.copy(this.lastSafePosition);
 
@@ -175,6 +178,7 @@ export class PlayerController {
     }
 
     this.updateMovement(delta, now);
+    this.updateAds(delta);
   }
 
   updateNoClip(delta) {
@@ -271,11 +275,13 @@ export class PlayerController {
     if (moving) {
       movement.normalize();
       const sprinting = this.input.isDown("shift") && !wantCrouch && this.input.isDown("w");
+      const adsSlowdown = this.state.player.aiming ? (this.adsSpeedMult ?? 0.6) : 1;
       const speed =
         playerConfig.walkSpeed *
         this.state.player.speedMultiplier *
         (sprinting ? playerConfig.sprintMultiplier : 1) *
-        (wantCrouch ? playerConfig.crouchMultiplier : 1);
+        (wantCrouch ? playerConfig.crouchMultiplier : 1) *
+        adsSlowdown;
       const step = movement.multiplyScalar(speed * delta);
       this.tryMove(step.x, 0, radius);
       this.tryMove(0, step.z, radius);
@@ -283,6 +289,9 @@ export class PlayerController {
         this.audio.footstep(now, sprinting);
       }
     }
+
+    this.state.player.moving = moving;
+    this.state.player.crouching = wantCrouch;
 
     if (this.camera.position.y < -12) {
       this.setPosition(this.lastSafePosition);
@@ -360,5 +369,26 @@ export class PlayerController {
 
   addCameraKick(amount) {
     this.camera.rotation.x = clamp(this.camera.rotation.x - amount, -Math.PI / 2 + 0.02, Math.PI / 2 - 0.02);
+  }
+
+  updateAds(delta) {
+    const aiming = this.state.player.aiming;
+    if (aiming && this.currentWeapon) {
+      const zoom = this.currentWeapon.adsZoom ?? 0.78;
+      this.targetFov = this.baseFov * zoom;
+      this.adsSpeedMult = this.currentWeapon.adsSpeed ?? 0.6;
+    } else {
+      this.targetFov = this.baseFov;
+      this.adsSpeedMult = 1;
+    }
+    this.currentFov += (this.targetFov - this.currentFov) * Math.min(1, delta * 14);
+    if (Math.abs(this.currentFov - this.camera.fov) > 0.01) {
+      this.camera.fov = this.currentFov;
+      this.camera.updateProjectionMatrix();
+    }
+  }
+
+  setCurrentWeapon(weapon) {
+    this.currentWeapon = weapon;
   }
 }
