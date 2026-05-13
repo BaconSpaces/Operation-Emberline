@@ -16,7 +16,7 @@ export class PlayerController {
     this.velocityY = 0;
     this.currentHeight = GAME_CONFIG.player.height;
     this.respawnTimer = 0;
-    this.fallbackAimEnabled = false;
+    this.fallbackAimEnabled = true;
     this.fallbackLookActive = false;
     this.fallbackMouseHasMoved = false;
     this.lookSensitivity = 0.0022;
