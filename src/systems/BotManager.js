@@ -146,9 +146,20 @@ class Bot {
       this.strafeAround(targetEye, delta);
     }
 
-    if (hasLos && distance < 44) {
+    if (hasLos && distance < 3) {
+      this.tryMelee(delta);
+    } else if (hasLos && distance < 44) {
       this.tryShoot(targetEye, distance, delta);
     }
+  }
+
+  tryMelee(delta) {
+    this.reactionTimer -= delta;
+    if (this.reactionTimer > 0 || this.fireTimer > 0) return;
+
+    this.manager.botMelee(this, this.target);
+    this.fireTimer = 0.8;
+    this.reactionTimer = this.difficulty.reaction * 0.5;
   }
 
   tryShoot(targetEye, distance, delta) {
@@ -406,6 +417,21 @@ export class BotManager {
   getActorEyePosition(actor) {
     if (actor.isPlayer) return actor.getEyePosition();
     return actor.getEyePosition();
+  }
+
+  botMelee(bot, target) {
+    const amount = bot.difficulty.damage * 3;
+    if (target.isPlayer) {
+      target.receiveDamage(amount, bot.group.position.clone(), true);
+    } else {
+      target.receiveDamage(amount, {
+        type: "bot",
+        name: bot.name,
+        team: bot.team,
+        position: bot.group.position.clone(),
+        melee: true
+      });
+    }
   }
 
   botShoot(bot, target, accuracy) {

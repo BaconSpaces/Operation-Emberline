@@ -393,5 +393,26 @@ export const WEAPON_BLUEPRINTS = [
     adsSpeed: 0.52,
     color: "#7a7aff",
     muzzleColor: "#5555cc"
+  },
+  {
+    id: "combatknife",
+    name: "Combat Knife",
+    role: "melee",
+    damage: 200,
+    fireRate: 420,
+    reloadTime: 0,
+    magazineSize: 1,
+    reserveMags: 0,
+    pellets: 1,
+    spread: 0.0,
+    recoil: 0.005,
+    range: 3,
+    automatic: false,
+    melee: true,
+    adsSpreadMult: 1,
+    adsZoom: 1,
+    adsSpeed: 1,
+    color: "#cccccc",
+    muzzleColor: "#cccccc"
   }
 ];

@@ -146,6 +146,23 @@ export class WeaponSystem {
     return false;
   }
 
+  demoteGunGame() {
+    if (this.state.mode !== "gunGame") return;
+    if (this.state.gunGame.weaponIndex <= 0) return;
+
+    this.state.gunGame.weaponIndex -= 1;
+    this.switchTo(this.state.gunGame.weaponIndex);
+    this.refillCurrentWeapon();
+    this.state.events.emit("gun-game-advanced", {
+      weapon: this.currentWeapon,
+      index: this.state.gunGame.weaponIndex,
+      total: this.state.weapons.length
+    });
+    this.state.events.emit("system-message", {
+      text: `Demoted! Back to ${this.currentWeapon.name}`
+    });
+  }
+
   refillCurrentWeapon() {
     const weapon = this.currentWeapon;
     weapon.currentAmmo = weapon.magazineSize;
@@ -156,15 +173,19 @@ export class WeaponSystem {
     const weapon = this.currentWeapon;
     if (this.reloading || this.fireCooldown > 0) return;
 
-    if (weapon.currentAmmo <= 0) {
+    if (weapon.currentAmmo <= 0 && !weapon.melee) {
       this.reload();
       return;
     }
 
-    weapon.currentAmmo -= 1;
+    if (!weapon.melee) {
+      weapon.currentAmmo -= 1;
+    }
     this.fireCooldown = weapon.fireRate / 1000;
-    this.audio.shoot(weapon);
-    this.effects.muzzleFlash(weapon);
+    if (!weapon.melee) {
+      this.audio.shoot(weapon);
+      this.effects.muzzleFlash(weapon);
+    }
 
     const recoilMult = this.state.player.aiming ? 0.6 : 1;
     this.player.addCameraKick(weapon.recoil * recoilMult);

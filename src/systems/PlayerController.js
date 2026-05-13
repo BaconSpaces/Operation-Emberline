@@ -295,7 +295,8 @@ export class PlayerController {
     this.state.player.crouching = wantCrouch;
 
     if (this.camera.position.y < -12) {
-      this.setPosition(this.lastSafePosition);
+      this.die("suicide");
+      return;
     } else if (this.world.isPlayerAreaClear(this.camera.position, this.currentHeight, radius)) {
       this.lastSafePosition.copy(this.camera.position);
     }
@@ -311,7 +312,7 @@ export class PlayerController {
     }
   }
 
-  applyDamage(amount, fromPosition = null) {
+  applyDamage(amount, fromPosition = null, melee = false) {
     const player = this.state.player;
     if (!player.alive || player.godMode || player.spawnShield > 0) return false;
 
@@ -327,7 +328,7 @@ export class PlayerController {
     });
 
     if (player.health <= 0) {
-      this.die();
+      this.die(melee ? "melee" : "combat");
       return true;
     }
     return false;
@@ -339,13 +340,13 @@ export class PlayerController {
     this.state.events.emit("system-message", { text: "Vitals restored" });
   }
 
-  die() {
+  die(cause = "combat") {
     const player = this.state.player;
     player.alive = false;
     player.deaths += 1;
     this.respawnTimer = GAME_CONFIG.player.respawnDelay;
     this.unlock();
-    this.state.events.emit("player-died", { delay: this.respawnTimer });
+    this.state.events.emit("player-died", { delay: this.respawnTimer, cause });
   }
 
   respawn() {
@@ -364,7 +365,7 @@ export class PlayerController {
       alive: () => this.state.player.alive,
       getPosition: () => this.camera.position.clone(),
       getEyePosition: () => this.camera.position.clone(),
-      receiveDamage: (amount, sourcePosition) => this.applyDamage(amount, sourcePosition)
+      receiveDamage: (amount, sourcePosition, melee = false) => this.applyDamage(amount, sourcePosition, melee)
     };
   }
 
