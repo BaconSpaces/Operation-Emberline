@@ -1,6 +1,6 @@
 ---
 name: testing-operation-emberline
-description: Test Operation Emberline game features end-to-end via local dev server. Use when verifying UI, camera, movement, or admin panel changes.
+description: Test Operation Emberline game features end-to-end via local dev server. Use when verifying UI, camera, movement, input, or admin panel changes.
 ---
 
 # Testing Operation Emberline
@@ -13,11 +13,12 @@ description: Test Operation Emberline game features end-to-end via local dev ser
 
 ## Game Flow
 
-- The game starts on a title screen with a **Deploy** button
-- Clicking Deploy starts the match (sets `state.status = "running"`)
+- The game starts on a **lobby screen** with Play/Locker/Battle Pass tabs
+- Clicking **Deploy** starts the match (sets `state.status = "running"`)
 - After Deploy, the game timer counts down and bots spawn
 - The camera uses a **fallback aim** system when pointer lock is unavailable (common in testing environments)
 - `canUseFallbackLook()` gates mouse aim on: `state.status === 'running' && state.player.alive && !state.admin.open`
+- Match end returns to lobby after ~1s delay
 
 ## Key Testing Patterns
 
@@ -38,12 +39,38 @@ description: Test Operation Emberline game features end-to-end via local dev ser
 - The Longwatch M32 has high recoil, useful for camera roll testing
 - Ammo count in the HUD changes when shots are fired (good for verifying click/fire works)
 
+### Mouse Input / ADS / Fire Testing
+- **Left-click** (button 0) fires the weapon — verified by ammo count decreasing
+- **Right-click** (button 2) activates ADS — verified by crosshair gaining `ads` class
+- Input is handled by `src/core/Input.js` with both `mousedown`/`mouseup` and `pointerdown`/`pointerup` listeners
+- WeaponSystem checks `isMouseDown(0)` for fire and `isMouseDown(2)` for ADS
+- Use console instrumentation to verify mouse behavior precisely:
+  ```javascript
+  // Read ammo count
+  document.querySelector('[data-hud="ammo"]').textContent
+  
+  // Check ADS state
+  document.querySelector('.crosshair').classList.contains('ads')
+  
+  // Simulate right-click to test ADS without fire
+  const canvas = document.querySelector('canvas');
+  canvas.dispatchEvent(new PointerEvent('pointerdown', { button: 2, bubbles: true }));
+  // ... check state ...
+  canvas.dispatchEvent(new PointerEvent('pointerup', { button: 2, bubbles: true }));
+  
+  // Simulate left-click to test fire
+  canvas.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+  canvas.dispatchEvent(new PointerEvent('pointerup', { button: 0, bubbles: true }));
+  ```
+- When testing combo clicks (ADS + fire), hold right-click then left-click and verify both states independently
+
 ## Environment Notes
 
 - Pointer lock typically fails in the testing environment, so fallback aim is used
 - xdotool key events may not always map correctly to browser KeyboardEvent codes — use console-based verification as backup
 - To instrument the camera for measurement, add `window.__testCamera = camera` after `scene.add(camera)` in `src/main.js` (remove before committing)
 - The `npm run build` command runs Vite build — use it for pre-PR verification
+- No CI is configured — only optional Devin Review runs on PRs
 
 ## Build Verification
 
