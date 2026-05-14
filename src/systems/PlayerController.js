@@ -42,7 +42,7 @@ export class PlayerController {
 
     domElement.addEventListener("pointerdown", (event) => {
       if (this.controls.isLocked || !this.canUseFallbackLook()) return;
-      if (this.fallbackAimEnabled || !this.canAttemptPointerLock()) {
+      if (event.button === 2) {
         this.fallbackAimEnabled = true;
         this.fallbackLookActive = true;
         try {
