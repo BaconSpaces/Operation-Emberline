@@ -34,11 +34,11 @@ export class Input {
 
     target.addEventListener("pointerdown", (event) => {
       if (!this.enabled) return;
-      this.pressMouse(0);
+      this.pressMouse(event.button);
     });
 
-    target.addEventListener("pointerup", () => {
-      this.releaseMouse(0);
+    target.addEventListener("pointerup", (event) => {
+      this.releaseMouse(event.button);
     });
 
     target.addEventListener("contextmenu", (event) => event.preventDefault());
