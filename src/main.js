@@ -122,7 +122,9 @@ const lobby = new Lobby(root, state, {
 lobby.show();
 
 state.events.on("match-ended", () => {
-  window.setTimeout(() => lobby.show(), 1200);
+  window.setTimeout(() => {
+    if (state.status === "ended") lobby.show();
+  }, 1200);
 });
 
 const admin = new AdminMenu(root, state, {
