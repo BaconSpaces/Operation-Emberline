@@ -12,6 +12,7 @@ import { WeaponSystem } from "./systems/WeaponSystem.js";
 import { World } from "./systems/World.js";
 import { AdminMenu } from "./ui/AdminMenu.js";
 import { HUD } from "./ui/HUD.js";
+import { Lobby } from "./ui/Lobby.js";
 
 const root = document.querySelector("#app");
 const state = createInitialState();
@@ -74,6 +75,7 @@ const match = {
     state.match.endedReason = reason;
     player.unlock();
     state.events.emit("system-message", { text: reason });
+    state.events.emit("match-ended", { reason });
   },
   pause() {
     if (state.status !== "running" || state.admin.open || !state.player.alive) return;
@@ -109,6 +111,20 @@ const hud = new HUD(root, state, camera, {
   onAudio: (enabled) => {
     audio.enabled = enabled;
   }
+});
+
+const lobby = new Lobby(root, state, {
+  onDeploy: () => {
+    lobby.hide();
+    match.deploy();
+  }
+});
+lobby.show();
+
+state.events.on("match-ended", () => {
+  window.setTimeout(() => {
+    if (state.status === "ended") lobby.show();
+  }, 1200);
 });
 
 const admin = new AdminMenu(root, state, {

@@ -61,6 +61,9 @@ export function createInitialState() {
         [GAME_CONFIG.teams.neutral.id]: 0
       }
     },
+    lobby: {
+      open: true
+    },
     admin: {
       open: false,
       fpsVisible: true,

@@ -221,7 +221,8 @@ export class HUD {
     this.refs.levelBar.style.width = `${Math.min(100, (progression.currentLevelXp / progression.nextLevelXp) * 100)}%`;
     this.refs.battlePassTier.textContent = `Tier ${progression.battlePassTier}`;
     this.refs.battlePassBar.style.width = `${Math.min(100, (progression.currentTierXp / progression.nextTierXp) * 100)}%`;
-    this.refs.battlePassReward.textContent = progression.lastReward || "";
+    const rewardLabel = !progression.lastReward ? "" : typeof progression.lastReward === "string" ? progression.lastReward : progression.lastReward.name;
+    this.refs.battlePassReward.textContent = rewardLabel;
   }
 
   updateScoreboard(input) {
@@ -249,7 +250,7 @@ export class HUD {
   updateOverlay() {
     const overlay = this.refs.overlay;
     const respawn = this.refs.respawn;
-    const showDeploy = (this.state.status === "idle" || this.state.status === "ended") && !this.state.admin.open;
+    const showDeploy = (this.state.status === "idle" || this.state.status === "ended") && !this.state.admin.open && !this.state.lobby.open;
     overlay.classList.toggle("hidden", !showDeploy);
     overlay.classList.toggle("compact", this.state.status === "ended");
 

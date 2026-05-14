@@ -67,8 +67,9 @@ export class ProgressionSystem {
       tier: progression.battlePassTier,
       reward: progression.lastReward
     });
+    const rewardLabel = typeof progression.lastReward === "string" ? progression.lastReward : progression.lastReward.name;
     this.state.events.emit("system-message", {
-      text: `Battle Pass ${progression.battlePassTier}: ${progression.lastReward}`
+      text: `Battle Pass ${progression.battlePassTier}: ${rewardLabel}`
     });
   }
 
